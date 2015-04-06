@@ -14,18 +14,17 @@ import java.util.Scanner;
 
 public class Client {
 	Socket socket;
-	private String IP = "192.168.1.104";
+	private String IP = "localhost";
 	private int PORT = 8888;
-	private Scanner scan;
+	private static Scanner scan;
 	
 	OutputStream out;
-	BufferedWriter bw;
-	private InputStream in;
+	static BufferedWriter bw;
+	InputStream in;
 	protected BufferedReader br;
 	private String username;
 	volatile boolean endFlag = true;
-	private String outmsg;
-	
+		
 	public Client(){
 		
 		try {
@@ -51,9 +50,12 @@ public class Client {
 				bw.write(username+"\n");  
 				bw.flush();
 				
+			
+				
 			}
 
 			System.out.println("Login success!");
+		
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,14 +65,40 @@ public class Client {
 		}
 	}
 	
-	
-	public static void main(String[] args) {   //一问一答时不必使用多线程，聊天室务必使用线程！
-		Client client =  new Client();
-		Thread receiver = new ClientReaderThread(client);
-		Thread sender = new ClientWriterThread(client);
+	public void sender(String outmsg){
 		
+		try {
+			bw.write(outmsg + "\n");
+			bw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public static void main(String[] args) throws InterruptedException {   //一问一答时不必使用多线程，聊天室务必使用线程！
+	     
+		String outmsg;
+		Client client =  new Client();
+
+		Thread receiver = new ClientReaderThread(client);
 		receiver.start();
-		sender.start();
+		
+		while(true){
+			System.out.println("Enter :");
+			scan = new Scanner(System.in);
+			outmsg = scan.nextLine();
+			if(client.endFlag){
+				client.sender(outmsg);
+			}else{
+				break;
+			}
+			
+		}
+		System.out.println("Socket is end!");
+		
+		
 		
 		} 
 		

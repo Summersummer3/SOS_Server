@@ -30,12 +30,14 @@ public class Server {
 	
 	public static void main(String[] args) {
 		try {
+				Socket client = null;
 				server = new ServerSocket(PORT);
 				thread_pool = Executors.newCachedThreadPool();
 				System.out.println("server is starting..." + InetAddress.getLocalHost());
+				
 				while(true){
 					
-					Socket client = server.accept();
+					client = server.accept();
 					sList.add(client);
 					thread_pool.execute(new Service(client));
 					

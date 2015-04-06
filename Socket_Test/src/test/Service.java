@@ -65,6 +65,7 @@ public class Service implements Runnable {
 			System.out.println(inmsg);
 			bw.write("1\n");
 			bw.flush();
+			
 			this.getMessage();
 			
 		} catch (ClassNotFoundException e) {
@@ -84,24 +85,20 @@ public class Service implements Runnable {
 	 public void getMessage(){
 		 
 			try {
-				while((inmsg = br.readLine())!=null){    //read方法实现io接受阻塞！！ 
-					
-					if(!inmsg.equals("bye")){
-						System.out.println(inmsg);
+				
+				while(!(inmsg = br.readLine()).equals("bye")){    //read方法实现io接受阻塞！！ 
+						System.out.println(username+" says:"+inmsg);
 						sendAllClient();
-						
-					}else{
-						bw.write("bye\n");
-						bw.flush();
-						socket.shutdownInput();
-						bw.close();
-						out.close();
-						socket.close();
-						Server.sList.remove(Server.sList.size()-1);
-						System.out.println(username + " has left!");
-						return;
 					}
-				}
+				bw.write("bye\n");
+				bw.flush();
+				socket.shutdownInput();
+				bw.close();
+				out.close();
+				socket.close();
+				Server.sList.remove(Server.sList.size()-1);
+				System.out.println(username + " has left!");
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -121,19 +118,20 @@ public class Service implements Runnable {
 	
 	 public void sendAllClient(){
 		 Socket mSocket;
+		 OutputStream outToAll;
+		 BufferedWriter bwToAll;
 		 try {
 			for(int i=0;i<Server.sList.size();i++){
 				outmsg = username + " say:"+inmsg+"\n";
 				mSocket = Server.sList.get(i);
-				out = mSocket.getOutputStream(); 
-				bw = new BufferedWriter(new OutputStreamWriter(out));
-				bw.write(outmsg);
-				bw.flush();
-				bw.close();
-				out.close();
-			 }
-			out = socket.getOutputStream();
-			bw = new BufferedWriter(new OutputStreamWriter(out));
+				System.out.println(mSocket.getInetAddress());
+				outToAll = mSocket.getOutputStream(); 
+				bwToAll = new BufferedWriter(new OutputStreamWriter(outToAll));
+				bwToAll.write(outmsg);
+				bwToAll.flush();
+				
+			}
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
