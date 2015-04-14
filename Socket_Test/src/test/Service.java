@@ -70,18 +70,23 @@ public class Service implements Runnable {
 			System.out.println(inmsg);
 			bw.write("1\n");
 			bw.flush();
+		
+			
 			
 //			this.getMessage();
 			
-		} catch (ClassNotFoundException e) {
-
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-					
-			e.printStackTrace();
-		} catch (SQLException e) {
-
-			e.printStackTrace();
+			try {
+				socket.shutdownInput();
+				bw.close();
+				out.close();
+				socket.close();
+				Server.sList.remove(Server.sList.size()-1);
+				System.out.println(username + " has left!");
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 				
 			
