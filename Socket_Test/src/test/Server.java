@@ -38,9 +38,9 @@ public class Server {
 				while(true){
 					
 					client = server.accept();
-					System.out.println("1 come!");
 					sList.add(client);
 					thread_pool.execute(new Service(client));
+					System.out.println("1 come!");
 					
 				}
 			} catch (UnknownHostException e) {

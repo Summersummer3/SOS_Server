@@ -20,6 +20,7 @@ import java.sql.Statement;
 
 
 
+
 import net.sf.json.JSONObject;
 import test.*;
 
@@ -30,6 +31,7 @@ public class Service implements Runnable {
 	private BufferedReader br;
 	private OutputStream out;
 	private BufferedWriter bw;
+	private String flagmsg;
 	private String inmsg;
 	private String outmsg;
 	private String username;
@@ -46,6 +48,7 @@ public class Service implements Runnable {
 			br = new BufferedReader(new InputStreamReader(in));
 			out = socket.getOutputStream();
 			bw = new BufferedWriter(new OutputStreamWriter(out));
+			System.out.println("connection is ready......");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,22 +57,35 @@ public class Service implements Runnable {
 	
 	 public void run() {
 		try {
-
 			
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
-			Statement stmt = conn.createStatement();
-			
-			while(!usernameSelect(conn, stmt)){
-				bw.write("0\n");
-				bw.flush();
+			while((flagmsg = br.readLine())!=null){
+				System.out.println("here!!");
+				if(flagmsg.equals("0")){
+					Class.forName("com.mysql.jdbc.Driver");
+					Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
+					Statement stmt = conn.createStatement();
+					
+					while(!usernameSelect(conn, stmt)){
+						bw.write("0\n");
+						bw.flush();
+					}
+					
+					inmsg = username + " comes to the server,now total connection : " + 
+						Server.sList.size();
+					
+					System.out.println(inmsg);
+					bw.write("1\n");
+					bw.flush();
+				}
+				
+				if(flagmsg.equals("1")){
+					inmsg = br.readLine();
+					System.out.println(inmsg);
+					
+				}
 			}
 			
-			inmsg = username + " comes to the server,now total connection : " + 
-				Server.sList.size();
-			System.out.println(inmsg);
-			bw.write("1\n");
-			bw.flush();
+			
 		
 			
 			
