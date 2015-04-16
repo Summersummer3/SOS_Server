@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="C:/Users/SuMMeR&amp;MuShRooM/Desktop/Android/Eclipse/adt-bundle-windows-x86_64-20140321/eclipse/jar/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/SuMMeR&amp;MuShRooM/Desktop/Android/Eclipse/adt-bundle-windows-x86_64-20140321/eclipse/jar/ezmorph-1.0.6.jar"/>
 	<classpathentry kind="lib" path="C:/Users/SuMMeR&amp;MuShRooM/Desktop/Android/Eclipse/adt-bundle-windows-x86_64-20140321/eclipse/jar/json-lib-2.4-jdk15.jar"/>
+	<classpathentry kind="lib" path="C:/Users/SuMMeR&amp;MuShRooM/Desktop/Android/Eclipse/adt-bundle-windows-x86_64-20140321/eclipse/jar/Xg-Push-SDK-JAVA-1.1.4/XingeApp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

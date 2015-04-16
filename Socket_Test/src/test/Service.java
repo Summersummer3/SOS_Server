@@ -21,11 +21,21 @@ import java.sql.Statement;
 
 
 
+
+
+
+
+import com.tencent.xinge.ClickAction;
+import com.tencent.xinge.Message;
+import com.tencent.xinge.Style;
+import com.tencent.xinge.XingeApp;
+
 import net.sf.json.JSONObject;
 import test.*;
 
 public class Service implements Runnable {
-
+	private final long ID = 2100103049;
+	private final String KEY = "6990b8d57df583359201589bdb5aaba6";
 	private Socket socket;
 	private InputStream in;
 	private BufferedReader br;
@@ -79,8 +89,25 @@ public class Service implements Runnable {
 				}
 				
 				if(flagmsg.equals("1")){
-					inmsg = br.readLine();
-					System.out.println(inmsg);
+					JSONObject json = new JSONObject();  
+					json = JSONObject.fromObject(br.readLine());
+					String Latitude = json.getString("Latitude");
+					String Longitude = json.getString("Longitude");
+					System.out.println(Latitude+"  "+Longitude);
+					//push message intent
+					XingeApp xinge = new XingeApp(ID, KEY);
+					Message message = new Message();
+					message.setType(Message.TYPE_NOTIFICATION);
+					message.setTitle("紧急求救信息！！！！");
+					message.setContent("有人遇到了危险，点击查看求救人位置！");
+					Style style = new Style(1, 1, 1, 1, 0, 1, 0, 0);
+					message.setStyle(style);
+					ClickAction action = new ClickAction();
+					action.setActionType(ClickAction.TYPE_INTENT);
+					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;S.tv2="
+									+ Longitude + ";S.tv1=" + Latitude + ";end");
+					message.setAction(action);
+					xinge.pushAllDevice(0, message);
 					
 				}
 			}
