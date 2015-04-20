@@ -25,6 +25,8 @@ import java.sql.Statement;
 
 
 
+
+import com.mysql.jdbc.UpdatableResultSet;
 import com.tencent.xinge.ClickAction;
 import com.tencent.xinge.Message;
 import com.tencent.xinge.Style;
@@ -46,6 +48,7 @@ public class Service implements Runnable {
 	private String outmsg;
 	private String username;
 	private String password;
+	private String TAG;
 	private String url = "jdbc:mysql://localhost:3306/android_server";
 	private final String USERNAME = "root";
 	private final String PASSWORD = "412765442";
@@ -55,9 +58,9 @@ public class Service implements Runnable {
 		this.socket = socket;
 		try {
 			in = this.socket.getInputStream();
-			br = new BufferedReader(new InputStreamReader(in));
+			br = new BufferedReader(new InputStreamReader(in,"GBK"));
 			out = socket.getOutputStream();
-			bw = new BufferedWriter(new OutputStreamWriter(out));
+			bw = new BufferedWriter(new OutputStreamWriter(out,"GBK"));
 			System.out.println("connection is ready......");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -110,9 +113,38 @@ public class Service implements Runnable {
 					xinge.pushAllDevice(0, message);
 					
 				}
+				
+				if(flagmsg.equals("2")){
+					Class.forName("com.mysql.jdbc.Driver");
+					Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
+					Statement stmt = conn.createStatement();
+					if(registerInSQL(conn, stmt)==1){
+						bw.write("2\n");
+						bw.flush();
+						
+						System.out.println("New register succeed!");
+					}else{
+						bw.write("0\n");
+						bw.flush();
+						
+					}
+					
+					
+					
+				}
+				
+				if(flagmsg.equals("bye")){
+					
+					socket.shutdownInput();
+					bw.close();
+					out.close();
+					socket.close();
+					Server.sList.remove(Server.sList.size()-1);
+					System.out.println(username + " has left!");	
+				}
 			}
 			
-			
+				
 		
 			
 			
@@ -168,6 +200,7 @@ public class Service implements Runnable {
 		try {
 			username = json.get("user_name").toString();
 			password = json.get("pass_word").toString();
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -178,6 +211,32 @@ public class Service implements Runnable {
 		ResultSet rs = stmt.executeQuery(sql);
 		return rs.next();
 	 }
+	 
+	 public int registerInSQL(Connection conn,Statement stmt) throws IOException, SQLException{
+		 
+			JSONObject json = new JSONObject();  
+			json = JSONObject.fromObject(br.readLine());
+			try {
+				username = json.get("username").toString();
+				password = json.get("password").toString();
+				TAG = json.get("TAG").toString();	
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(username+" "+password + " " + TAG);
+			
+			sql = "insert into admin (username, password, TAG) values ('"+ username +"', '"+ password + "', '" + TAG + "')";
+			
+			try{
+			return stmt.executeUpdate(sql);
+			}
+			catch(com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e){
+				return 0;
+				
+			}
+		 }
 	
 //	 public void sendAllClient(){
 //		 Socket mSocket;

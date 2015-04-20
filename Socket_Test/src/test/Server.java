@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 public class Server {
 
 	private static ServerSocket server;
-	private final static int PORT = 8888;
+	private final static int PORT = 8000;
 	private static ExecutorService thread_pool;
 	protected static List<Socket> sList = new ArrayList<Socket>();
 
