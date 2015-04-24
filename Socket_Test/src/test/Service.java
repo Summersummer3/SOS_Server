@@ -26,6 +26,7 @@ import java.sql.Statement;
 
 
 
+
 import com.mysql.jdbc.UpdatableResultSet;
 import com.tencent.xinge.ClickAction;
 import com.tencent.xinge.Message;
@@ -36,6 +37,7 @@ import net.sf.json.JSONObject;
 import test.*;
 
 public class Service implements Runnable {
+	
 	private final long ID = 2100103049;
 	private final String KEY = "6990b8d57df583359201589bdb5aaba6";
 	private Socket socket;
@@ -72,16 +74,25 @@ public class Service implements Runnable {
 		try {
 			
 			while((flagmsg = br.readLine())!=null){
-				System.out.println("here!!");
+				
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
+				Statement stmt = conn.createStatement();
+				
+				/*server service use: 
+				1.login.
+				2.push SO SMessage.
+				3.register.
+				4.set help users.*/	
+				
+				
 				if(flagmsg.equals("0")){
-					Class.forName("com.mysql.jdbc.Driver");
-					Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
-					Statement stmt = conn.createStatement();
 					
-					while(!usernameSelect(conn, stmt)){
+					
+					if(!usernameSelect(conn, stmt)){
 						bw.write("0\n");
 						bw.flush();
-					}
+					}else{
 					
 					inmsg = username + " comes to the server,now total connection : " + 
 						Server.sList.size();
@@ -89,6 +100,7 @@ public class Service implements Runnable {
 					System.out.println(inmsg);
 					bw.write("1\n");
 					bw.flush();
+					}
 				}
 				
 				if(flagmsg.equals("1")){
@@ -97,12 +109,14 @@ public class Service implements Runnable {
 					String Latitude = json.getString("Latitude");
 					String Longitude = json.getString("Longitude");
 					System.out.println(Latitude+"  "+Longitude);
+					
 					//push message intent
+					
 					XingeApp xinge = new XingeApp(ID, KEY);
 					Message message = new Message();
 					message.setType(Message.TYPE_NOTIFICATION);
 					message.setTitle("紧急求救信息！！！！");
-					message.setContent("有人遇到了危险，点击查看求救人位置！");
+					message.setContent("你的朋友" + username + "遇到了危险，点击查看求救位置！");
 					Style style = new Style(1, 1, 1, 1, 0, 1, 0, 0);
 					message.setStyle(style);
 					ClickAction action = new ClickAction();
@@ -110,28 +124,72 @@ public class Service implements Runnable {
 					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;S.tv2="
 									+ Longitude + ";S.tv1=" + Latitude + ";end");
 					message.setAction(action);
-					xinge.pushAllDevice(0, message);
 					
+					//查找出求救人的紧急求救用户
+					String[] names = SelectHelpUserName(conn, stmt);
+					
+					if(!names[0].equals("null")){
+						System.out.println(xinge.pushSingleAccount(0, names[0], message));
+					}
+					if(!names[0].equals("null")){
+						System.out.println(xinge.pushSingleAccount(0, names[1], message));
+					}
+					if(!names[0].equals("null")){
+						System.out.println(xinge.pushSingleAccount(0, names[2], message));
+					}
 				}
 				
 				if(flagmsg.equals("2")){
-					Class.forName("com.mysql.jdbc.Driver");
-					Connection conn = DriverManager.getConnection(url,USERNAME,PASSWORD);
-					Statement stmt = conn.createStatement();
-					if(registerInSQL(conn, stmt)==1){
+					
+					if(helpListRegisterInSQL(conn, stmt)==1){
 						bw.write("2\n");
 						bw.flush();
 						
-						System.out.println("New register succeed!");
+						System.out.println("New helpListRegister succeed!");
 					}else{
 						bw.write("0\n");
 						bw.flush();
 						
 					}
-					
-					
-					
+						
 				}
+				
+
+				if(flagmsg.equals("3")){
+					
+					int result = registerInSQL(conn, stmt);
+					if(result==1){
+						bw.write("3\n");
+						bw.flush();
+						
+						System.out.println("New register succeed!");
+					}
+					
+					if(result==11){
+						bw.write("11\n");
+						bw.flush();
+						
+					}
+					
+					if(result==12){
+						bw.write("12\n");
+						bw.flush();
+						
+					}
+					
+					if(result==13){
+						bw.write("13\n");
+						bw.flush();
+						
+					}
+					
+					if(result==0){
+						bw.write("13\n");
+						bw.flush();
+					}
+							
+				}
+				
 				
 				if(flagmsg.equals("bye")){
 					
@@ -193,7 +251,36 @@ public class Service implements Runnable {
 //		 
 //	 }
 	 
-	 public boolean usernameSelect(Connection conn,Statement stmt) throws IOException, SQLException{
+	 
+
+	private String[] SelectHelpUserName(Connection conn,Statement stmt) throws SQLException {
+		String HelpUserName1 = "";
+		String HelpUserName2 = "";
+		String HelpUserName3 = "";
+		
+		sql = "select HelpUserName1 from HelpList where username ='"+username+"'";
+		ResultSet rs1 = stmt.executeQuery(sql);
+		if(rs1.next()){                 //必须先判断rs是否有下一个，才能取值
+			HelpUserName1 = rs1.getString("HelpUserName1");
+		}
+		
+		sql = "select HelpUserName2 from HelpList where username ='"+username+"'";
+		ResultSet rs2 = stmt.executeQuery(sql);
+		if(rs2.next()){
+			HelpUserName2 = rs2.getString("HelpUserName2");
+		}
+		
+		sql = "select HelpUserName3 from HelpList where username ='"+username+"'";
+		ResultSet rs3 = stmt.executeQuery(sql);
+		if(rs3.next()){
+			HelpUserName3 = rs3.getString("HelpUserName3");
+		}
+		
+		return new String[]{HelpUserName1,HelpUserName2,HelpUserName3};
+		
+	}
+
+	public boolean usernameSelect(Connection conn,Statement stmt) throws IOException, SQLException{
 		 
 		JSONObject json = new JSONObject();  
 		json = JSONObject.fromObject(br.readLine());
@@ -211,6 +298,7 @@ public class Service implements Runnable {
 		ResultSet rs = stmt.executeQuery(sql);
 		return rs.next();
 	 }
+	
 	 
 	 public int registerInSQL(Connection conn,Statement stmt) throws IOException, SQLException{
 		 
@@ -237,6 +325,65 @@ public class Service implements Runnable {
 				
 			}
 		 }
+	 
+	 public int helpListRegisterInSQL(Connection conn, Statement stmt) throws SQLException {
+		 	
+		 	String helpUserName1 = "";
+		 	String helpUserName2 = "";
+		 	String helpUserName3 = "";
+		 	
+		 	
+			JSONObject json = new JSONObject();  
+			try {
+				
+				json = JSONObject.fromObject(br.readLine());
+			
+				helpUserName1 = json.get("helpUserName1").toString();
+				helpUserName2 = json.get("helpUserName2").toString();
+				helpUserName3 = json.get("helpUserName3").toString();	
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(helpUserName1+" "+helpUserName2 + " " + helpUserName3);
+			
+			if(!helpUserName1.equals("null")){
+				sql = "select * from admin where username = '"+helpUserName1+"'";
+				ResultSet rs1 = stmt.executeQuery(sql);
+				if(!rs1.next()){
+					return 11;
+				}
+			}
+			
+			if(!helpUserName2.equals("null")){
+				sql = "select * from admin where username = '"+helpUserName2+"'";
+				ResultSet rs2 = stmt.executeQuery(sql);
+				if(!rs2.next()){
+					return 12;
+				}
+			}
+			
+			if(!helpUserName2.equals("null")){
+				sql = "select * from admin where username = '"+helpUserName3+"'";
+				ResultSet rs3 = stmt.executeQuery(sql);
+				if(!rs3.next()){
+					return 13;
+				}
+			}
+			
+			sql = "insert into HelpList (username, HelpUserName1, HelpUserName2, HelpUserName3) values ('" + username + "', '"
+			+ helpUserName1 +"', '"+ helpUserName2 + "', '" + helpUserName3 + "') where username = '" + username + "'";
+			
+			try{
+				System.out.println(sql);
+				return stmt.executeUpdate(sql);
+			}
+			catch(com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e){
+				return 0;
+				
+			}
+		}
 	
 //	 public void sendAllClient(){
 //		 Socket mSocket;
