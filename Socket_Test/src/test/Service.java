@@ -128,24 +128,24 @@ public class Service implements Runnable {
 					//查找出求救人的紧急求救用户
 					String[] names = SelectHelpUserName(conn, stmt);
 					
-					if(!names[0].equals("null")){
+					if(!names[0].equals("")){
 						System.out.println(xinge.pushSingleAccount(0, names[0], message));
 					}
-					if(!names[0].equals("null")){
+					if(!names[1].equals("")){
 						System.out.println(xinge.pushSingleAccount(0, names[1], message));
 					}
-					if(!names[0].equals("null")){
+					if(!names[2].equals("")){
 						System.out.println(xinge.pushSingleAccount(0, names[2], message));
 					}
 				}
 				
 				if(flagmsg.equals("2")){
 					
-					if(helpListRegisterInSQL(conn, stmt)==1){
+					if(registerInSQL(conn, stmt)==1){
 						bw.write("2\n");
 						bw.flush();
 						
-						System.out.println("New helpListRegister succeed!");
+						System.out.println("New register succeed!");
 					}else{
 						bw.write("0\n");
 						bw.flush();
@@ -157,12 +157,12 @@ public class Service implements Runnable {
 
 				if(flagmsg.equals("3")){
 					
-					int result = registerInSQL(conn, stmt);
+					int result = helpListRegisterInSQL(conn, stmt);
 					if(result==1){
 						bw.write("3\n");
 						bw.flush();
 						
-						System.out.println("New register succeed!");
+						System.out.println("New helpListRegister succeed!");
 					}
 					
 					if(result==11){
@@ -348,7 +348,7 @@ public class Service implements Runnable {
 			}
 			System.out.println(helpUserName1+" "+helpUserName2 + " " + helpUserName3);
 			
-			if(!helpUserName1.equals("null")){
+			if(!helpUserName1.equals("")){
 				sql = "select * from admin where username = '"+helpUserName1+"'";
 				ResultSet rs1 = stmt.executeQuery(sql);
 				if(!rs1.next()){
@@ -356,7 +356,7 @@ public class Service implements Runnable {
 				}
 			}
 			
-			if(!helpUserName2.equals("null")){
+			if(!helpUserName2.equals("")){
 				sql = "select * from admin where username = '"+helpUserName2+"'";
 				ResultSet rs2 = stmt.executeQuery(sql);
 				if(!rs2.next()){
@@ -364,7 +364,7 @@ public class Service implements Runnable {
 				}
 			}
 			
-			if(!helpUserName2.equals("null")){
+			if(!helpUserName3.equals("")){
 				sql = "select * from admin where username = '"+helpUserName3+"'";
 				ResultSet rs3 = stmt.executeQuery(sql);
 				if(!rs3.next()){
@@ -373,7 +373,7 @@ public class Service implements Runnable {
 			}
 			
 			sql = "insert into HelpList (username, HelpUserName1, HelpUserName2, HelpUserName3) values ('" + username + "', '"
-			+ helpUserName1 +"', '"+ helpUserName2 + "', '" + helpUserName3 + "') where username = '" + username + "'";
+			+ helpUserName1 +"', '"+ helpUserName2 + "', '" + helpUserName3 + "')";
 			
 			try{
 				System.out.println(sql);
