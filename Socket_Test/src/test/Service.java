@@ -27,6 +27,10 @@ import java.sql.Statement;
 
 
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.mysql.jdbc.UpdatableResultSet;
 import com.tencent.xinge.ClickAction;
 import com.tencent.xinge.Message;
@@ -104,12 +108,14 @@ public class Service implements Runnable {
 				}
 				
 				if(flagmsg.equals("1")){
+					
 					JSONObject json = new JSONObject();  
 					json = JSONObject.fromObject(br.readLine());
-					String Latitude = json.getString("Latitude");
-					String Longitude = json.getString("Longitude");
-					System.out.println(Latitude+"  "+Longitude);
+					double Latitude = json.getDouble("Latitude");
+					double Longitude = json.getDouble("Longitude");
+					String Addr = json.getString("Address");
 					
+					insertHelpLog(conn, stmt, Latitude, Longitude, Addr);
 					//push message intent
 					
 					XingeApp xinge = new XingeApp(ID, KEY);
@@ -121,8 +127,8 @@ public class Service implements Runnable {
 					message.setStyle(style);
 					ClickAction action = new ClickAction();
 					action.setActionType(ClickAction.TYPE_INTENT);
-					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;S.tv2="
-									+ Longitude + ";S.tv1=" + Latitude + ";end");
+					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;d.tv2="
+									+ Longitude + ";d.tv1=" + Latitude + ";end");
 					message.setAction(action);
 					
 					//查找出求救人的紧急求救用户
@@ -299,6 +305,25 @@ public class Service implements Runnable {
 		return rs.next();
 	 }
 	
+	
+	 public int insertHelpLog(Connection conn,Statement stmt,double Latitude,double Longitude,String Addr){
+		
+		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+		
+		sql = "insert into HelpLog (username,time,Latitude,Longitude,Address) values "
+				+ "('"+ username +"', '"+ time + "', '" + Latitude + "','"+ Longitude + "','"+ Addr + "')";
+		try {
+			return stmt.executeUpdate(sql);
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
+		return 0;
+		 
+		 
+	 }
 	 
 	 public int registerInSQL(Connection conn,Statement stmt) throws IOException, SQLException{
 		 
