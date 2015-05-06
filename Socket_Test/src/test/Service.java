@@ -94,7 +94,7 @@ public class Service implements Runnable {
 					
 					
 					if(!usernameSelect(conn, stmt)){
-						bw.write("0\n");
+						bw.write("01\n");
 						bw.flush();
 					}else{
 					
@@ -102,7 +102,7 @@ public class Service implements Runnable {
 						Server.sList.size();
 					
 					System.out.println(inmsg);
-					bw.write("1\n");
+					bw.write("11\n");
 					bw.flush();
 					}
 				}
@@ -128,7 +128,7 @@ public class Service implements Runnable {
 					ClickAction action = new ClickAction();
 					action.setActionType(ClickAction.TYPE_INTENT);
 					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;d.tv2="
-									+ Longitude + ";d.tv1=" + Latitude + ";end");
+									+ Longitude + ";d.tv1=" + Latitude + ";S.tv3=" + Addr + ";end");
 					message.setAction(action);
 					
 					//查找出求救人的紧急求救用户
