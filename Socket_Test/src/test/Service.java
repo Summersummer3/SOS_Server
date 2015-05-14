@@ -15,21 +15,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-
-
-
-
-
-
-
-
-
-
-
-
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import org.json.JSONArray;
 
 import com.mysql.jdbc.UpdatableResultSet;
 import com.tencent.xinge.ClickAction;
@@ -128,7 +120,7 @@ public class Service implements Runnable {
 					ClickAction action = new ClickAction();
 					action.setActionType(ClickAction.TYPE_INTENT);
 					action.setIntent("intent:#Intent;action=android.intent.action.SENDTO;d.tv2="
-									+ Longitude + ";d.tv1=" + Latitude + ";S.tv3=" + Addr + ";end");
+									+ Longitude + ";d.tv1=" + Latitude + ";S.tv3=" + Addr + ";S.tv4=" + username + ";end");
 					message.setAction(action);
 					
 					//查找出求救人的紧急求救用户
@@ -196,6 +188,12 @@ public class Service implements Runnable {
 							
 				}
 				
+				if(flagmsg.equals("4")){
+					String helpUser = br.readLine();
+					System.out.println(helpUser);
+					selectHelpHistroy(conn, stmt,helpUser);
+					
+				}
 				
 				if(flagmsg.equals("bye")){
 					
@@ -259,6 +257,53 @@ public class Service implements Runnable {
 	 
 	 
 
+	private void selectHelpHistroy(Connection conn, Statement stmt, String helpUser) throws SQLException {
+		
+		JSONArray jsonArray = new JSONArray();
+		JSONObject json = null;
+		List<JSONObject> locList = new ArrayList<JSONObject>();
+		sql = "select Latitude,Longitude,time from HelpLog where username = '" + helpUser + "' order by time DESC";
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		for(int i=0;i<5;i++){
+			if(rs.next()){
+				
+				json = new JSONObject();
+				json.put("Latitude", rs.getDouble("Latitude"));
+				json.put("Longitude", rs.getDouble("Longitude"));
+				json.put("time", rs.getString("time"));
+				locList.add(json);
+				
+			}
+		}
+		
+		jsonArray = new JSONArray(locList);
+		
+		for(int i=0;i<5;i++){
+			
+			System.out.println(jsonArray.get(i));
+	
+		}   
+		
+		
+	
+		
+			try {
+				bw.write("locs\n");
+				bw.flush();
+				Thread.sleep(200);
+				bw.write(jsonArray.toString()+"\n");
+				bw.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+	}
+
 	private String[] SelectHelpUserName(Connection conn,Statement stmt) throws SQLException {
 		String HelpUserName1 = "";
 		String HelpUserName2 = "";
@@ -287,8 +332,11 @@ public class Service implements Runnable {
 	}
 
 	public boolean usernameSelect(Connection conn,Statement stmt) throws IOException, SQLException{
-		 
-		JSONObject json = new JSONObject();  
+		
+		
+		
+		JSONObject json = new JSONObject();
+		
 		json = JSONObject.fromObject(br.readLine());
 		try {
 			username = json.get("user_name").toString();
